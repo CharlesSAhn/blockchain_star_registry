@@ -80,7 +80,13 @@ class Blockchain {
 
                 self.height = self.height + 1;
 
-                resolve(self.chain);
+                await self.validateChain().then((result) => {
+                    resolve(self.chain);
+                }).catch((error) => {
+                    console.log(error)
+                    self.chain.pop()
+                });
+
             }
             catch(e)
             {
@@ -228,11 +234,11 @@ class Blockchain {
                 console.log("validated")
             }).catch((error) => { errorLog.push(error)}));
 
-            if(errorLog){
-                resolve(errorLog)
+            if(errorLog.length > 0){
+                resolve(fail)
             }
             else {
-                resolve(null)
+                resolve(true)
             }
         });
     }

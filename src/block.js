@@ -11,6 +11,7 @@
 
 const SHA256 = require('crypto-js/sha256');
 const hex2ascii = require('hex2ascii');
+const deepcopy = require('deepcopy');
 
 class Block {
 
@@ -39,10 +40,14 @@ class Block {
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
-            const current_hash = self.hash
+            const current_hash = self.hash;
+            let obj_copy = deepcopy(self);
+
+            //remove the hash value from the copy object
+            obj_copy.hash = null;
             
             // Recalculate the hash of the Block
-            self.hash = SHA256(JSON.stringify(self)).toString()
+            self.hash = SHA256(JSON.stringify(obj_copy)).toString()
 
             // Comparing if the hashes changed
             if (self.hash == current_hash)
