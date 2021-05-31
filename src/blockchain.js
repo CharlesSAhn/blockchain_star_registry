@@ -35,7 +35,7 @@ class Blockchain {
      */
     async initializeChain() {
         if( this.height === -1){
-            let block = new BlockClass.Block({data: 'Genesis Block'});
+            let block = new BlockClass.Block({data: 'Genesis Block'}, null);
             await this._addBlock(block);
         }
     }
@@ -145,7 +145,7 @@ class Blockchain {
                 bitcoinMessage.verify(message, address, signature);
 
                 console.log(self)
-                let block = new BlockClass.Block({data: star});
+                let block = new BlockClass.Block({data: star}, address);
                 await self._addBlock(block);
 
                 resolve(block)
@@ -182,7 +182,7 @@ class Blockchain {
     getBlockByHeight(height) {
         let self = this;
         return new Promise((resolve, reject) => {
-            let block = self.chain.filter(p => p.height === height)[0];
+            let block = self.chain.find(p => p.height === height);
             if(block){
                 resolve(block);
             } else {
@@ -205,9 +205,10 @@ class Blockchain {
                     ({
                         hash: b.hash,                                           
                         height: b.height,                                           
-                        body: b.getBData,    
+                        body: b.getBData(),
                         time: b.time,                                             
-                        previousBlockHash: b.previousBlockHash  
+                        previousBlockHash: b.previousBlockHash,
+                        address: b.address
                     })
                 );
 
@@ -230,9 +231,21 @@ class Blockchain {
         let self = this;
         let errorLog = [];
         return new Promise(async (resolve, reject) => {
+
+            //validate the current hash
             self.chain.forEach(b => b.validate().then((result) => {
                 console.log("validated")
             }).catch((error) => { errorLog.push(error)}));
+
+            //validate the previous Hash
+
+            if (self.chain.length > 1){
+                for(let i = 0; i < self.chain.length - 1; i++){
+                    if (self.chain[i].hash !== self.chain[i+1].previousBlockHash){
+                        self.chain.push({index:i+1, "message":"previous block hash doesn't match"})
+                    }
+                }
+            }
 
             if(errorLog.length > 0){
                 resolve(fail)

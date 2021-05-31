@@ -16,12 +16,13 @@ const deepcopy = require('deepcopy');
 class Block {
 
     // Constructor - argument data will be the object containing the transaction data
-	constructor(data){
+	constructor(data, address){
 		this.hash = null;                                           // Hash of the block
 		this.height = 0;                                            // Block Height (consecutive number of each block)
 		this.body = Buffer(JSON.stringify(data)).toString('hex');   // Will contain the transactions stored in the block, by default it will encode the data
 		this.time = 0;                                              // Timestamp for the Block creation
-		this.previousBlockHash = null;                              // Reference to the previous Block Hash
+		this.previousBlockHash = null;
+		this.address = address;
     }
     
     /**
@@ -36,21 +37,19 @@ class Block {
      *  5. Resolve true or false depending if it is valid or not.
      *  Note: to access the class values inside a Promise code you need to create an auxiliary value `let self = this;`
      */
-    validate() {
+    validate(){
         let self = this;
         return new Promise((resolve, reject) => {
             // Save in auxiliary variable the current block hash
             const current_hash = self.hash;
-            let obj_copy = deepcopy(self);
+            self.hash = null;
 
-            //remove the hash value from the copy object
-            obj_copy.hash = null;
-            
             // Recalculate the hash of the Block
-            self.hash = SHA256(JSON.stringify(obj_copy)).toString()
+            let newHash = SHA256(JSON.stringify(self)).toString();
+            self.hash = current_hash;
 
             // Comparing if the hashes changed
-            if (self.hash == current_hash)
+            if (newHash == current_hash)
             {
                 resolve(hash);
             }
