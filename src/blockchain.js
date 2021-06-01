@@ -141,7 +141,7 @@ class Blockchain {
             
             const elapsed_time = currentTime - messageTime;
 
-            if (elapsed_time < 30000000){
+            if (elapsed_time < 300){
                 bitcoinMessage.verify(message, address, signature);
 
                 console.log(self)
